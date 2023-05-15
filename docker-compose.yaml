@@ -10,3 +10,6 @@ services:
     image: "redis"
   datacollector:
     build: ./datacollector
+    depends_on:
+      - mqtt-broker
+      - redis
