@@ -1,4 +1,4 @@
-from pytorch/pytorch
+from python
 expose 50000
 copy . /app
 workdir /app
