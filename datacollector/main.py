@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import redis
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -6,6 +7,11 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
+    r.set(msg.topic, msg.payload)
+
+# Connect to Redis
+r = redis.Redis(host='redis', port=6379, db=0)
+
 
 client = mqtt.Client()
 client.on_connect = on_connect
