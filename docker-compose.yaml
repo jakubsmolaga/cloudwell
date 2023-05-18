@@ -13,3 +13,13 @@ services:
     depends_on:
       - mqtt-broker
       - redis
+  api:
+    build: ./api
+    depends_on:
+      - redis
+    ports:
+      - "5000:5000"
+  panel:
+    build: ./panel
+    ports:
+      - "8080:80"
