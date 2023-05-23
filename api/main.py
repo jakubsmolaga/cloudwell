@@ -1,15 +1,18 @@
-import redis
 import flask
+from influxdb_client import InfluxDBClient
 
-# Connect to Redis
-r = redis.Redis(host="redis", port=6379, db=0, decode_responses=True)
+# Connect to InfluxDB
+influx = InfluxDBClient(url="http://influxdb:8086", token="cloudwell", org="cloudwell")
 
-# Check if Redis is running
+# Check if InfluxDB is running
 try:
-    r.ping()
-except redis.exceptions.ConnectionError:
-    print("Redis isn't running")
+    influx.health()
+except:
+    print("InfluxDB isn't running")
     exit(1)
+
+# Create a read API client
+query_api = influx.query_api()
 
 # Create Flask app
 app = flask.Flask(__name__)
@@ -25,8 +28,17 @@ def hello():
 # Get temperature
 @app.route("/temperature")
 def get_temperature():
-    res = {"temperature": r.get("temperature")}
-    return res
+    # Get last temperature
+    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "temperature") |> last()'
+    tables = query_api.query(query)
+    # Convert data to JSON
+    res = []
+    for table in tables:
+        for record in table.records:
+            res.append({"time": record.get_time(), "value": record.get_value()})
+    res = res[0]
+    return flask.jsonify(res)
+
 
 # Setup CORS
 @app.after_request
@@ -35,6 +47,7 @@ def after_request(response):
     response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
     response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
     return response
+
 
 # Start Flask app
 app.run(host="0.0.0.0", port=5000, debug=False)

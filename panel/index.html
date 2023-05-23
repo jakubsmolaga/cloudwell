@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="sakura.css">
     <title>Cloudwell</title>
 </head>
 
@@ -23,13 +24,17 @@
             fetch(`${baseUrl}:5000/temperature`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data)
                     // Display the temperature
-                    document.getElementById('temperature').innerHTML = `Temperature: ${data.temperature}°C`;
+                    document.getElementById('temperature').innerHTML = `Temperature: ${data.value}°C`;
                 });
         };
 
+        // Get the temperature when the page loads
+        getTemperature();
+
         // Get the temperature every 5 seconds
-        setInterval(getTemperature, 500);
+        setInterval(getTemperature, 5000);
     </script>
 
 </body>

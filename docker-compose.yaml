@@ -6,20 +6,37 @@ services:
       - "1883:1883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-  redis:
-    image: "redis"
-  datacollector:
-    build: ./datacollector
+  influxdb:
+    image: "influxdb:2.0"
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb:/var/lib/influxdb2
+    env_file:
+      - influx.env
+  telegraf:
+    image: "telegraf"
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
     depends_on:
       - mqtt-broker
-      - redis
+      - influxdb
+    env_file:
+      - influx.env
   api:
     build: ./api
     depends_on:
       - redis
     ports:
       - "5000:5000"
+    restart: unless-stopped
   panel:
     build: ./panel
     ports:
       - "8080:80"
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  influxdb:
