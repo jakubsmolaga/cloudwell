@@ -1,11 +1,13 @@
 version: "3.9"
 services:
+  # ---------------------------------------------------------------------------- #
   mqtt-broker:
     image: "eclipse-mosquitto"
     ports:
       - "1883:1883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+  # ---------------------------------------------------------------------------- #
   influxdb:
     image: "influxdb:2.0"
     ports:
@@ -14,6 +16,7 @@ services:
       - influxdb:/var/lib/influxdb2
     env_file:
       - influx.env
+  # ---------------------------------------------------------------------------- #
   telegraf:
     image: "telegraf"
     volumes:
@@ -23,6 +26,7 @@ services:
       - influxdb
     env_file:
       - influx.env
+  # ---------------------------------------------------------------------------- #
   api:
     build: ./api
     depends_on:
@@ -30,6 +34,9 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      - BROKER_URL=mqtt-broker
+  # ---------------------------------------------------------------------------- #
   panel:
     build: ./panel
     ports:
@@ -37,6 +44,14 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+  # ---------------------------------------------------------------------------- #
+  intruder-detection:
+    build: ./intruder-detection
+    restart: unless-stopped
+    depends_on:
+      - mqtt-broker
+    environment:
+      - BROKER_URL=mqtt-broker
 
 volumes:
   influxdb:

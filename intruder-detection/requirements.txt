@@ -1,4 +1,5 @@
-Flask>=2.0.2
-opencv_python>=4.7.0.72
-Pillow>=9.5.0
-torch>=2.0.0
+attrs
+numpy
+paho_mqtt
+Pillow
+ultralytics

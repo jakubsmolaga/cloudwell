@@ -1,5 +1,11 @@
+print("Importing dependencies...")
 import flask
 from influxdb_client import InfluxDBClient
+import images
+from args import args
+import paho.mqtt.publish
+
+print("Imported dependencies!")
 
 # Connect to InfluxDB
 influx = InfluxDBClient(url="http://influxdb:8086", token="cloudwell", org="cloudwell")
@@ -23,6 +29,35 @@ app = flask.Flask(__name__)
 def hello():
     res = {"hello": "world"}
     return res
+
+
+@app.route("/image")
+def get_image():
+    return flask.send_file("image.jpg", mimetype="image/jpeg")
+
+
+@app.route("/boxes")
+def get_boxes():
+    return flask.jsonify(images.boxes)
+
+
+@app.route("/upload-image", methods=["POST"])
+def upload_image():
+    # Get image
+    image = flask.request.files["image"]
+    # Save image
+    image.save("image.jpg")
+    # Send image over mqtt
+    with open("image.jpg", "rb") as f:
+        image_bytes = f.read()
+        paho.mqtt.publish.single(
+            args.image_topic,
+            image_bytes,
+            hostname=args.broker_url,
+            port=args.broker_port,
+        )
+    # Return success
+    return flask.jsonify({"success": True})
 
 
 # Get temperature
