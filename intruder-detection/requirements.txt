@@ -2,4 +2,3 @@ attrs
 numpy
 paho_mqtt
 Pillow
-ultralytics
