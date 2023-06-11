@@ -25,6 +25,16 @@ def on_message(client: mqtt.Client, userdata, msg: mqtt.MQTTMessage):
     # Publish the bounding boxes
     client.publish(args.boxes_topic, json.dumps(boxes))
 
+    # If there are intruders detected - send an alarm
+    if len(boxes) > 0:
+        alarm_payload = {
+            "property_id": 1,
+            "alarm_type": "intruder",
+            "current_val": 1,
+            "alarm_val": 1,
+        }
+        client.publish(args.alarm_topic, json.dumps(alarm_payload))
+
 
 # ----------------------------------- Main ----------------------------------- #
 
