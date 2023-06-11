@@ -50,6 +50,14 @@ services:
       - mqtt-broker
     environment:
       - BROKER_URL=mqtt-broker
+  # ---------------------------------------------------------------------------- #
+
+  bridge_mqtt_web_socket:
+    build: ./bridge_mqtt_web_socket
+    ports: 
+      - "8765:8765"
+    depends_on:
+      - mqtt-broker
 
 volumes:
   influxdb:
