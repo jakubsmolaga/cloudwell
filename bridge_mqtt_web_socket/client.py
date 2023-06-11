@@ -11,6 +11,7 @@ sys.stderr = log_file
 # Inicjalizacja klienta MQTT
 mqtt_client = mqtt.Client()
 
+
 # Klasa obsługująca klienta Web Socket
 class WebSocketClient:
     def __init__(self, server_address):
@@ -33,8 +34,10 @@ class WebSocketClient:
         if self.websocket:
             await self.websocket.close()
 
+
 # Inicjalizacja klienta Web Socket
 websocket_client = WebSocketClient("ws://127.0.0.1:8765")
+
 
 # Funkcja obsługująca otrzymane wiadomości MQTT
 def on_message(client, userdata, msg):
@@ -42,10 +45,12 @@ def on_message(client, userdata, msg):
     print("Otrzymano wiadomość MQTT:", message)
     asyncio.run(websocket_client.send_message(message))
 
+
 # Konfiguracja klienta MQTT
 mqtt_broker = "mqtt-broker"
-mqtt_topic = "/alarms"
+mqtt_topic = "alarms"
 mqtt_client.on_message = on_message
+
 
 # Funkcja obsługująca klienta MQTT
 def mqtt_client_function():
@@ -53,17 +58,20 @@ def mqtt_client_function():
     mqtt_client.subscribe(mqtt_topic)
     mqtt_client.loop_start()
 
+
 # Funkcja obsługująca klienta Web Socket
 async def websocket_client_function():
     await websocket_client.connect()
     while True:
         await websocket_client.receive_message()
 
+
 # Funkcja główna
 async def main():
     loop = asyncio.get_running_loop()
     loop.run_in_executor(None, mqtt_client_function)
     await websocket_client_function()
+
 
 # Uruchomienie programu
 try:
