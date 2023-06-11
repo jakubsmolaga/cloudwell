@@ -71,7 +71,35 @@ def get_temperature():
     for table in tables:
         for record in table.records:
             res.append({"time": record.get_time(), "value": record.get_value()})
+    if len(res) == 0:
+        return flask.Response(status=404)
     res = res[0]
+    return flask.jsonify(res)
+
+
+@app.route("/measurements")
+def get_measurements():
+    # Get last temperature
+    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "temperature")'
+    tables = query_api.query(query)
+    # Convert data to JSON
+    temperatures = []
+    for table in tables:
+        for record in table.records:
+            temperatures.append(
+                {"time": record.get_time(), "value": record.get_value()}
+            )
+    # Get last humidity
+    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "humidity")'
+    tables = query_api.query(query)
+    # Convert data to JSON
+    humidities = []
+    for table in tables:
+        for record in table.records:
+            humidities.append({"time": record.get_time(), "value": record.get_value()})
+    if len(temperatures) == 0 or len(humidities) == 0:
+        return flask.Response(status=404)
+    res = {"temperature": temperatures[0], "humidity": humidities[0]}
     return flask.jsonify(res)
 
 
