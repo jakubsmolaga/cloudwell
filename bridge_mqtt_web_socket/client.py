@@ -1,8 +1,8 @@
 import paho.mqtt.client as mqtt
 import asyncio
 import websockets
+import json
 import sys
-
 
 log_file = open("log_client.txt", "a")
 sys.stdout = log_file
@@ -29,6 +29,7 @@ class WebSocketClient:
         if self.websocket:
             message = await self.websocket.recv()
             print("Otrzymano wiadomość Web Socket:", message)
+            await process_websocket_message(message)
 
     async def disconnect(self):
         if self.websocket:
@@ -64,6 +65,21 @@ async def websocket_client_function():
     await websocket_client.connect()
     while True:
         await websocket_client.receive_message()
+
+
+# Funkcja przetwarzająca otrzymaną wiadomość z Web Socket
+async def process_websocket_message(message):
+    try:
+        data = json.loads(message)
+        # Sprawdź czy wiadomość ma poprawny format
+        if "max_temp" in data and "min_temp" in data and "max_hum" in data and "min_hum" in data and "intruder" in data:
+            mqtt_message = json.dumps(data)
+            mqtt_client.publish("settings", mqtt_message)
+            print("Wysłano wiadomość MQTT:", mqtt_message)
+        else:
+            print("Otrzymano nieprawidłowy format wiadomości")
+    except json.JSONDecodeError:
+        print("Błąd podczas przetwarzania wiadomości JSON")
 
 
 # Funkcja główna

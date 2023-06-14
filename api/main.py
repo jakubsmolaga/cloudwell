@@ -80,7 +80,7 @@ def get_temperature():
 @app.route("/measurements")
 def get_measurements():
     # Get last temperature
-    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "temperature")'
+    query = 'from(bucket: "cloudwell") |> range(start: -30d) |> filter(fn: (r) => r._measurement == "temperature")'
     tables = query_api.query(query)
     # Convert data to JSON
     temperatures = []
@@ -90,7 +90,7 @@ def get_measurements():
                 {"time": record.get_time(), "value": record.get_value()}
             )
     # Get last humidity
-    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "humidity")'
+    query = 'from(bucket: "cloudwell") |> range(start: -30d) |> filter(fn: (r) => r._measurement == "humidity")'
     tables = query_api.query(query)
     # Convert data to JSON
     humidities = []
