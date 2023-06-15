@@ -24,7 +24,7 @@ def boxes_callback(client, userdata, msg):
 def __subscribe_image():
     paho.mqtt.subscribe.callback(
         image_callback,
-        args.image_topic,
+        [args.image_topic],
         hostname=args.broker_url,
         port=args.broker_port,
     )
@@ -33,7 +33,7 @@ def __subscribe_image():
 def __subscribe_boxes():
     paho.mqtt.subscribe.callback(
         boxes_callback,
-        args.boxes_topic,
+        [args.boxes_topic],
         hostname=args.broker_url,
         port=args.broker_port,
     )

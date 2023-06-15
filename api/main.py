@@ -9,11 +9,15 @@ import os
 print("Imported dependencies!")
 
 # Connect to InfluxDB
-influx = InfluxDBClient(url="http://influxdb:8086", token="cloudwell", org="cloudwell")
-influx.health()
-
-# Check if InfluxDB is running
-if influx.health().status == "fail":
+influx: InfluxDBClient = None
+try:
+    influx = InfluxDBClient(
+        url="http://influxdb:8086", token="cloudwell", org="cloudwell"
+    )
+    # Check if InfluxDB is running
+    if influx.health().status == "fail":
+        raise Exception("Health check failed")
+except Exception as e:
     print("InfluxDB isn't running")
     exit(1)
 
