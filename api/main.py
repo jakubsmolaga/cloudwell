@@ -52,7 +52,7 @@ def get_measurements():
     # Get last temperature
     query = """
         from(bucket: "cloudwell")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "temperature")
             |> filter(fn: (r) => r["_field"] == "value")
             |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
@@ -68,7 +68,7 @@ def get_measurements():
     # Get last humidity
     query = """
         from(bucket: "cloudwell")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "humidity")
             |> filter(fn: (r) => r["_field"] == "value")
             |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
