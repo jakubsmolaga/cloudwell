@@ -59,6 +59,14 @@ services:
       - "8765:8765"
     depends_on:
       - mqtt-broker
+  # ---------------------------------------------------------------------------- #
+  sensor-analysis:
+    build: ./sensor-analysis
+    restart: unless-stopped
+    depends_on:
+      - mqtt-broker
+    environment:
+      - BROKER_URL=mqtt-broker
 
 volumes:
   influxdb:
