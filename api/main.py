@@ -44,46 +44,16 @@ def get_boxes():
     return flask.jsonify(images.boxes)
 
 
-@app.route("/upload-image", methods=["POST"])
-def upload_image():
-    # Get image
-    image = flask.request.files["image"]
-    # Save image
-    image.save("image.jpg")
-    # Send image over mqtt
-    with open("image.jpg", "rb") as f:
-        image_bytes = f.read()
-        paho.mqtt.publish.single(
-            args.image_topic,
-            image_bytes,
-            hostname=args.broker_url,
-            port=args.broker_port,
-        )
-    # Return success
-    return flask.jsonify({"success": True})
-
-
-# Get temperature
-@app.route("/temperature")
-def get_temperature():
-    # Get last temperature
-    query = 'from(bucket: "cloudwell") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "temperature") |> last()'
-    tables = query_api.query(query)
-    # Convert data to JSON
-    res = []
-    for table in tables:
-        for record in table.records:
-            res.append({"time": record.get_time(), "value": record.get_value()})
-    if len(res) == 0:
-        return flask.Response(status=404)
-    res = res[0]
-    return flask.jsonify(res)
-
-
 @app.route("/measurements")
 def get_measurements():
     # Get last temperature
-    query = 'from(bucket: "cloudwell") |> range(start: -24h) |> filter(fn: (r) => r._measurement == "temperature") |> last()'
+    query = """
+        from(bucket: "cloudwell")
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "temperature")
+            |> filter(fn: (r) => r["_field"] == "value")
+            |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
+            |> yield(name: "last")"""
     tables = query_api.query(query)
     # Convert data to JSON
     temperatures = []
@@ -93,7 +63,13 @@ def get_measurements():
                 {"time": record.get_time(), "value": record.get_value()}
             )
     # Get last humidity
-    query = 'from(bucket: "cloudwell") |> range(start: -24h) |> filter(fn: (r) => r._measurement == "humidity") |> last()'
+    query = """
+        from(bucket: "cloudwell")
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "humidity")
+            |> filter(fn: (r) => r["_field"] == "value")
+            |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
+            |> yield(name: "last")"""
     tables = query_api.query(query)
     # Convert data to JSON
     humidities = []
