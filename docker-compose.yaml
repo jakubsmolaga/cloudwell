@@ -26,6 +26,7 @@ services:
       - influxdb
     env_file:
       - influx.env
+    restart: unless-stopped
   # ---------------------------------------------------------------------------- #
   api:
     build: ./api
@@ -66,5 +67,7 @@ services:
       - mqtt-broker
     environment:
       - BROKER_URL=mqtt-broker
+
 volumes:
   influxdb:
+
