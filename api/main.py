@@ -4,6 +4,7 @@ from influxdb_client import InfluxDBClient
 import images
 from args import args
 import paho.mqtt.publish
+import os
 
 print("Imported dependencies!")
 
@@ -33,6 +34,8 @@ def hello():
 
 @app.route("/image")
 def get_image():
+    if not os.path.exists("image.jpg"):
+        return flask.Response(status=404)
     return flask.send_file("image.jpg", mimetype="image/jpeg")
 
 
@@ -99,7 +102,7 @@ def get_measurements():
             humidities.append({"time": record.get_time(), "value": record.get_value()})
     if len(temperatures) == 0 or len(humidities) == 0:
         return flask.Response(status=404)
-    res = {"temperature": temperatures[-1], "humidity": humidities[-1]}
+    res = {"temperature": temperatures[0], "humidity": humidities[0]}
     return flask.jsonify(res)
 
 
