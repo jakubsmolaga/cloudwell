@@ -26,6 +26,7 @@ services:
       - influxdb
     env_file:
       - influx.env
+    restart: unless-stopped
   # ---------------------------------------------------------------------------- #
   api:
     build: ./api
