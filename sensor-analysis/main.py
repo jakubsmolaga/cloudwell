@@ -6,7 +6,8 @@ mqtt_broker = "mqtt-broker"
 mqtt_port = 1883
 mqtt_topic_temp = "temperature"
 mqtt_topic_hum = "humidity"
-mqtt_topic_alarm = "alarm"
+mqtt_topic_alarm = "alarms"
+mqtt_topic_settings = "settings"
 
 # Stałe określające progi temperatury i wilgotności
 temp_min = 15
@@ -19,6 +20,7 @@ def on_connect(client, userdata, flags, rc):
     print("Połączono z MQTT brokerem. Kod: " + str(rc))
     client.subscribe(mqtt_topic_temp)
     client.subscribe(mqtt_topic_hum)
+    client.subscribe(mqtt_topic_settings)
 
 # Funkcja wywoływana po wysłaniu wiadomości MQTT
 def on_publish(client, userdata, mid):
@@ -33,7 +35,9 @@ def on_message(client, userdata, msg):
                 "alarm_val": 0
     }
     if msg.topic == mqtt_topic_temp:
-        temp = msg.payload.decode("utf-8")
+        temp_msg = msg.payload.decode("utf-8")
+        key, value = temp_msg.split('=')
+        temp = value.split()[0]
         temp = float(temp)
         data["current_val"] = temp
         if temp < temp_min:
@@ -50,9 +54,11 @@ def on_message(client, userdata, msg):
             client.publish(mqtt_topic_alarm, json_data)
             print(data)
     if msg.topic == mqtt_topic_hum:
-        hum = msg.payload.decode("utf-8")
-        hum = float(temp)
-
+        hum_msg = msg.payload.decode("utf-8")
+        key, value = hum_msg.split('=')
+        hum = value.split()[0]
+        hum = float(hum)
+        data["current_val"] = hum
         if hum < hum_min:
             print("Wilgotność jest zbyt niska!")
             data["alarm_type"] = "min_hum"
@@ -66,11 +72,25 @@ def on_message(client, userdata, msg):
             json_data = json.dumps(data)
             client.publish(mqtt_topic_alarm, json_data)
 
+
+# Funkcja wywoływana po otrzymaniu wiadomości o ustawieniach
+def on_settings_message(client, userdata, msg):
+    global temp_min, temp_max, hum_min, hum_max
+    settings = json.loads(msg.payload)
+    print("Ustawienia alarmów zostały zaktualizowane:", settings)
+    temp_min = float(settings.get("min_temp", temp_min))
+    temp_max = float(settings.get("max_temp", temp_max))
+    hum_min = float(settings.get("min_hum", hum_min))
+    hum_max = float(settings.get("max_hum", hum_max))
+    
+
+
 # Inicjalizacja klienta MQTT
 client = mqtt.Client()
 client.on_publish = on_publish
 client.on_connect = on_connect
 client.on_message = on_message
+client.message_callback_add(mqtt_topic_settings, on_settings_message)
 
 # Podłączenie do brokera MQTT
 client.connect(mqtt_broker, mqtt_port, 60)
