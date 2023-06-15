@@ -35,7 +35,9 @@ def on_message(client, userdata, msg):
                 "alarm_val": 0
     }
     if msg.topic == mqtt_topic_temp:
-        temp = msg.payload.decode("utf-8")
+        temp_msg = msg.payload.decode("utf-8")
+        key, value = temp_msg.split('=')
+        temp = value.split()[0]
         temp = float(temp)
         data["current_val"] = temp
         if temp < temp_min:
@@ -52,7 +54,9 @@ def on_message(client, userdata, msg):
             client.publish(mqtt_topic_alarm, json_data)
             print(data)
     if msg.topic == mqtt_topic_hum:
-        hum = msg.payload.decode("utf-8")
+        hum_msg = msg.payload.decode("utf-8")
+        key, value = hum_msg.split('=')
+        hum = value.split()[0]
         hum = float(hum)
         data["current_val"] = hum
         if hum < hum_min:
