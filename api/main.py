@@ -10,11 +10,10 @@ print("Imported dependencies!")
 
 # Connect to InfluxDB
 influx = InfluxDBClient(url="http://influxdb:8086", token="cloudwell", org="cloudwell")
+influx.health()
 
 # Check if InfluxDB is running
-try:
-    influx.health()
-except:
+if influx.health().status == "fail":
     print("InfluxDB isn't running")
     exit(1)
 
