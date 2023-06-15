@@ -55,8 +55,7 @@ def get_measurements():
             |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "temperature")
             |> filter(fn: (r) => r["_field"] == "value")
-            |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
-            |> yield(name: "last")"""
+            |> tail(n: 1)"""
     tables = query_api.query(query)
     # Convert data to JSON
     temperatures = []
@@ -71,8 +70,7 @@ def get_measurements():
             |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "humidity")
             |> filter(fn: (r) => r["_field"] == "value")
-            |> aggregateWindow(every: 24h, fn: last, createEmpty: false)
-            |> yield(name: "last")"""
+            |> tail(n: 1)"""
     tables = query_api.query(query)
     # Convert data to JSON
     humidities = []
